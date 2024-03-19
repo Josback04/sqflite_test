@@ -10,12 +10,16 @@ class CustomAppbar extends AppBar {
       required this.callback,
       required this.titleString})
       : super(title: Text(titleString), actions: [
-          TextButton(
-              onPressed: callback,
-              child: Text(
-                buttonTitle,
-                style: TextStyle(color: Colors.white),
-              ))
+          Builder(builder: (context) {
+            return TextButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor),
+                onPressed: callback,
+                child: Text(
+                  buttonTitle,
+                  style: TextStyle(color: Colors.white),
+                ));
+          })
         ]);
 
   @override
