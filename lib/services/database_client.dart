@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_test/models/article.dart';
 import 'package:sqflite_test/models/item_list.dart';
 
 class DatabaseClient {
@@ -29,7 +30,7 @@ class DatabaseClient {
     await database.execute('''
       CREATE TABLE list(
         id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL,
+        name TEXT NOT NULL
 
       )
        ''');
@@ -47,10 +48,46 @@ class DatabaseClient {
       ''');
   }
 
+//obtenir données
   Future<List<ItemList>> allItem() async {
     Database db = await database;
     const query = "SELECT *FROM list";
     List<Map<String, dynamic>> mapList = await db.rawQuery(query);
     return mapList.map((map) => ItemList.fromMap(map)).toList();
+  }
+
+  Future<List<Article>> articlesFromId(int id) async {
+    Database db = await database;
+    List<Map<String, dynamic>> mapList =
+        await db.query('article', where: 'list=?', whereArgs: [id]);
+
+    return mapList.map((map) => Article.fromMap(map)).toList();
+  }
+
+  //get data
+  Future<bool> addItemList(String text) async {
+    Database db = await database;
+    await db.insert("list", {"name": text});
+    return true;
+  }
+
+  Future<bool> upsert(Article article) async {
+    Database db = await database;
+    (article.id == null)
+        ? article.id = await db.insert('article', article.toMap())
+        : await db.update('article', article.toMap(),
+            where: 'id=?', whereArgs: [article.id]);
+
+    return true;
+  }
+
+  //sup list
+
+  Future<bool> removeItem(ItemList itemList) async {
+    Database db = await database;
+    await db.delete('list', where: 'id=?', whereArgs: [itemList.id]);
+
+    // supp all articles
+    return true;
   }
 }
